@@ -1,0 +1,157 @@
+import random
+import sys
+from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtGui import QPainter, QBrush, QColor, QFont, QPen
+from PyQt5.QtCore import Qt
+
+a = 0
+DECK = ["6c", "7c", "8c", "9c", "10c", "11c", "12c", "13c", "14c", "6p", "7p", "8p", "9p", "10p", "11p", "12p", "13p",
+        "14p", "6k", "7k", "8k", "9k", "10k", "11k", "12k", "13k", "14k", "6b", "7b", "8b", "9b", "10b", "11b", "12b",
+        "13b", "14b"]
+ready_player_one = False
+ready_player_two = False
+first_player_lose = False
+second_player_lose = False
+double_draw = []
+message = ''
+card1 = ''
+card2 = ''
+card1_with_picture = ''
+card2_with_picture = ''
+deck_dict = {"6c": '6♥', "7c": '7♥', "8c": '8♥', "9c": '9♥', "10c": '10♥', "11c": 'J♥', "12c": 'Q♥', "13c": 'K♥',
+             "14c": 'A♥', "6p": '6♤', "7p": '7♤', "8p": '8♤', "9p": '9♤', "10p": '10♤', "11p": 'J♤', "12p": 'Q♤',
+             "13p": 'K♤', "14p": 'A♤', "6k": '6♧', "7k": '7♧', "8k": '8♧', "9k": '9♧', "10k": '10♧', "11k": 'J♧',
+             "12k": 'Q♧', "13k": 'K♧', "14k": 'A♧', "6b": '6♦', "7b": '7♦', "8b": '8♦', "9b": '9♦', "10b": '10♦',
+             "11b": 'J♦', "12b": 'Q♦', "13b": 'K♦', "14b": 'A♦'}
+
+
+class Example(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.card1 = card1
+        self.card1_with_picture = card1_with_picture
+        self.card2 = card2
+        self.card2_with_picture = card2_with_picture
+        self.deck_1_player = deck_1_player
+        self.deck_2_player = deck_2_player
+        self.double_draw = double_draw
+        self.message = message
+        self.ready_player_one = ready_player_one
+        self.ready_player_two = ready_player_two
+        self.first_player_lose = first_player_lose
+        self.second_player_lose = second_player_lose
+
+    def initUI(self):
+        self.setGeometry(300, 300, 600, 600)
+        self.setWindowTitle('Пьяница')
+        self.a = 0
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Space:
+            self.a += 1
+            self.update()
+
+            self.card1_with_picture = deck_1_player[0]
+            self.card2_with_picture = deck_2_player[0]
+            self.card1 = int(deck_1_player[0][:-1])
+            self.card2 = int(deck_2_player[0][:-1])
+            a1 = deck_1_player.pop(0)
+            a2 = deck_2_player.pop(0)
+            if len(deck_1_player) == 0:
+                self.ready_player_one = True
+            elif len(deck_2_player) == 0:
+                self.ready_player_two = True
+            if self.card1 == 14 and self.card2 == 6:
+                deck_2_player.append(self.card1_with_picture)
+                deck_2_player.append(self.card2_with_picture)
+                self.message = 'Второй забирает'
+                if self.ready_player_one:
+                    self.first_player_lose = True
+            elif self.card2 == 14 and self.card1 == 6:
+                deck_1_player.append(self.card2_with_picture)
+                deck_1_player.append(self.card1_with_picture)
+                self.message = 'Первый забирает'
+                if self.ready_player_two:
+                    self.second_player_lose = True
+            elif self.card1 > self.card2:
+                deck_1_player.append(self.card1_with_picture)
+                deck_1_player.append(self.card2_with_picture)
+                self.message = 'Первый забирает'
+                if self.ready_player_two:
+                    self.second_player_lose = True
+            elif self.card2 > self.card1:
+                deck_2_player.append(self.card2_with_picture)
+                deck_2_player.append(self.card1_with_picture)
+                self.message = 'Второй забирает'
+                if self.ready_player_one:
+                    self.first_player_lose = True
+            elif self.card1 == self.card2:
+                deck_1_player.append(self.card2_with_picture)
+                deck_2_player.append(self.card1_with_picture)
+                self.message = 'Ничья!'
+
+    def paintEvent(self, e):
+        self.qp = QPainter()
+        self.qp.begin(self)
+        self.draw()
+        self.qp.end()
+
+    def draw(self):
+        if self.second_player_lose:
+            self.qp.setPen(QColor(0, 0, 0))
+            self.qp.setFont(QFont('Decorative', 40))
+            self.qp.drawText(0, 300, 'Первый игрок выиграл!')
+            print('Количество ходов - ', self.a)
+        elif self.first_player_lose:
+            self.qp.setPen(QColor(0, 0, 0))
+            self.qp.setFont(QFont('Decorative', 40))
+            self.qp.drawText(0, 300, 'Второй игрок выиграл!')
+            print('Количество ходов - ', self.a)
+        else:
+            brush = QBrush(Qt.BDiagPattern)
+            self.qp.setBrush(brush)
+            self.qp.drawRect(60, 45, 120, 180)
+            brush.setStyle(Qt.BDiagPattern)
+            self.qp.setBrush(brush)
+            self.qp.drawRect(420, 45, 120, 180)
+            self.qp.setPen(QColor(0, 0, 0))
+            if self.card1 == 10:
+                self.qp.setFont(QFont('Decorative', 50))
+            else:
+                self.qp.setFont(QFont('Decorative', 70))
+            self.qp.drawText(120, 420, str(deck_dict.get(self.card1_with_picture, '')))
+            if self.card2 == 10:
+                self.qp.setFont(QFont('Decorative', 50))
+            else:
+                self.qp.setFont(QFont('Decorative', 70))
+            self.qp.drawText(320, 420, str(deck_dict.get(self.card2_with_picture, '')))
+            self.qp.setFont(QFont('Decorative', 10))
+            self.qp.drawText(60, 45, str(len(self.deck_1_player)))
+            self.qp.drawText(530, 45, str(len(self.deck_2_player)))
+            self.qp.setFont(QFont('Decorative', 50))
+            self.qp.drawText(280, 150, str(self.a))
+            self.qp.setFont(QFont('Decorative', 15))
+            self.qp.drawText(230, 250, str(self.message))
+            pen = QPen(Qt.black, 1, Qt.SolidLine)
+            self.qp.setPen(pen)
+            self.qp.drawLine(120, 300, 235, 300)
+            self.qp.drawLine(235, 300, 235, 480)
+            self.qp.drawLine(120, 480, 235, 480)
+            self.qp.drawLine(120, 300, 120, 480)
+            self.qp.drawLine(320, 300, 435, 300)
+            self.qp.drawLine(435, 300, 435, 480)
+            self.qp.drawLine(320, 480, 435, 480)
+            self.qp.drawLine(320, 300, 320, 480)
+
+
+deck = DECK
+random.shuffle(deck)
+deck_1_player = deck[:18]
+deck_2_player = deck[18:]
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = Example()
+    ex.show()
+    sys.exit(app.exec())
